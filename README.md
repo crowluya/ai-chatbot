@@ -24,7 +24,8 @@
 - [AI SDK](https://sdk.vercel.ai/docs)
   - Unified API for generating text, structured objects, and tool calls with LLMs
   - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
+  - 支持 OpenAI 兼容 API 的服务（如 Google AI 的 Gemini 模型）
+  - Supports xAI, OpenAI, Fireworks, and other model providers
 - [shadcn/ui](https://ui.shadcn.com)
   - Styling with [Tailwind CSS](https://tailwindcss.com)
   - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
@@ -36,7 +37,15 @@
 
 ## Model Providers
 
-This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat model. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+原模板使用[xAI](https://x.ai) `grok-2-1212`作为默认聊天模型。现在已修改为使用 OpenAI 兼容 API，可以轻松接入任何符合 OpenAI API 格式的模型，如[Google Gemini](https://ai.google.dev/)。通过[AI SDK](https://sdk.vercel.ai/docs)，您可以轻松切换 LLM 提供者。
+
+如果要配置您自己的模型，请修改`.env`文件中的以下变量：
+
+```
+OPENAI_API_KEY=您的API密钥
+OPENAI_MODEL=您想使用的模型ID（如google/gemini-flash-1.5）
+OPENAI_COMPLETION_URL=API端点URL
+```
 
 ## Deploy Your Own
 
@@ -60,3 +69,48 @@ pnpm dev
 ```
 
 Your app template should now be running on [localhost:3000](http://localhost:3000).
+
+## 项目修改记录
+
+本项目基于 Vercel 的 Chat SDK 模板，进行了以下主要修改：
+
+### 1. AI 模型提供者
+
+- 从 xAI (grok-2-1212) 切换到 OpenAI 兼容 API
+- 配置为使用 Google Gemini 模型 (google/gemini-flash-1.5)
+- 使用`compatibility: 'compatible'`模式确保兼容性
+- 为不支持的功能（如图像生成）提供模拟实现
+
+### 2. 数据库配置
+
+- 集成 Supabase PostgreSQL 数据库
+- 添加双重数据库连接支持：URL 和单独环境变量
+- 配置 SSL 证书验证选项以确保连接安全
+- 添加适当的连接池设置优化性能
+
+### 3. 测试用户创建
+
+- 提供脚本创建测试用户
+- 用户凭据:
+  - 邮箱: test@example.com
+  - 密码: Test123456!
+- 脚本位置: `scripts/create-test-user.ts`
+
+### 4. 环境变量配置
+
+```
+# OpenAI兼容API配置
+OPENAI_API_KEY=您的API密钥
+OPENAI_MODEL=google/gemini-flash-1.5
+OPENAI_COMPLETION_URL=https://generativelanguage.googleapis.com/v1
+
+# Supabase PostgreSQL连接
+POSTGRES_URL=您的数据库连接URL
+# 或使用单独的连接参数
+PGHOST=您的数据库主机
+PGPORT=您的数据库端口
+PGDATABASE=您的数据库名称
+PGUSER=您的数据库用户名
+PGPASSWORD=您的数据库密码
+PGSSLMODE=require
+```

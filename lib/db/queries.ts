@@ -33,8 +33,30 @@ import type { ArtifactKind } from '@/components/artifact';
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
 
-// biome-ignore lint: Forbidden non-null assertion.
-const client = postgres(process.env.POSTGRES_URL!);
+// 创建数据库连接
+let client;
+
+// 优先使用独立的PG环境变量
+if (process.env.PGHOST && process.env.PGUSER && process.env.PGPASSWORD) {
+  client = postgres({
+    host: process.env.PGHOST,
+    port: parseInt(process.env.PGPORT || '5432'),
+    database: process.env.PGDATABASE || 'postgres',
+    username: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    ssl: { rejectUnauthorized: false },
+    max: 10,
+    idle_timeout: 30
+  });
+} else {
+  // biome-ignore lint: Forbidden non-null assertion.
+  client = postgres(process.env.POSTGRES_URL!, { 
+    ssl: { rejectUnauthorized: false }, // 禁用严格的SSL证书验证
+    max: 10,   // 连接池大小
+    idle_timeout: 30 // 空闲连接超时（秒）
+  });
+}
+
 const db = drizzle(client);
 
 export async function getUser(email: string): Promise<Array<User>> {
